@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">AwesomeTodo</string>
+    <string name="action_delete_all">Delete All Items</string>
+    <string name="title_activity_edit">EditActivity</string>
+    <string name="edit_header_text">Edit Item:</string>
+    <string name="new_item_hint">Enter a New Item</string>
+    <string name="add_item_btn_txt">Add Item</string>
+    <string name="edit_save_btn_txt">Save</string>
+</resources>

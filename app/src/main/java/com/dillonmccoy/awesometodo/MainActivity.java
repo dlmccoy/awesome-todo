@@ -1,13 +1,14 @@
 package com.dillonmccoy.awesometodo;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -17,23 +18,23 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 
-import org.apache.commons.io.FileUtils;
-
-import java.io.File;
-import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = "MainActivity";
+
     private static final int EDIT_REQUEST = 1;
     public static final String ITEM_TEXT_EXTRA = "itemText";
 
-    private ArrayList<String> items;
-    private ArrayAdapter<String> itemsAdapter;
+    private ArrayList<TodoItem> items;
+    private TodoArrayAdapter itemsAdapter;
     private ListView lvItems;
-    private int currentEditingPosition;
+    private TodoItem currentEditingItem;
     private Button addItemBtn;
     private EditText newItemText;
-
+    private TodoSource todoSource;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,12 +48,19 @@ public class MainActivity extends AppCompatActivity {
         addItemBtn.setEnabled(false);
         newItemText = (EditText) findViewById(R.id.etNewItem);
 
-        // Fetch the persisted todo items.
+        todoSource = new TodoSource(this);
+        try {
+            todoSource.open();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // Fetch the persisted items.
         readItems();
 
         // Set up and store references to the UI components.
         lvItems = (ListView)findViewById(R.id.lvItems);
-        itemsAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, items);
+        itemsAdapter = new TodoArrayAdapter(this, items);
         lvItems.setAdapter(itemsAdapter);
         setUpListViewListener();
         setUpNewItemListener();
@@ -83,9 +91,14 @@ public class MainActivity extends AppCompatActivity {
         lvItems.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+
+                // Remove the item from the database.
+                todoSource.deleteItem(items.get(position));
+
+                // Remove the item from the local ArrayList and re-render.
                 items.remove(position);
                 itemsAdapter.notifyDataSetChanged();
-                writeItems();
+
                 return true;
             }
         });
@@ -94,8 +107,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Intent editItemIntent = new Intent(MainActivity.this, EditItemActivity.class);
-                editItemIntent.putExtra(ITEM_TEXT_EXTRA, items.get(position));
-                currentEditingPosition = position;
+                editItemIntent.putExtra(ITEM_TEXT_EXTRA, items.get(position).task);
+                currentEditingItem = items.get(position);
                 startActivityForResult(editItemIntent, EDIT_REQUEST);
             }
         });
@@ -116,10 +129,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
-        itemsAdapter.add(itemText);
         newItemText.setText("");
 
-        writeItems();
+        TodoItem newItem = todoSource.addTodoItem(itemText);
+        itemsAdapter.add(newItem);
     }
 
     @Override
@@ -138,25 +151,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void readItems() {
-        File filesDir = getFilesDir();
-        File todoFile = new File(filesDir, "todo.txt");
+        items = todoSource.getAllTodos();
 
-        try {
-            items = new ArrayList<>(FileUtils.readLines(todoFile));
-        } catch (IOException e) {
-            items = new ArrayList<>();
-        }
-
-    }
-
-    private void writeItems() {
-        File filesDir = getFilesDir();
-        File todoFile = new File(filesDir, "todo.txt");
-        try {
-            FileUtils.writeLines(todoFile, items);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -165,15 +161,14 @@ public class MainActivity extends AppCompatActivity {
             case EDIT_REQUEST:
                 if (resultCode == RESULT_OK) {
 
-                    // Update the changed element.
-                    String updatedText = data.getStringExtra(ITEM_TEXT_EXTRA);
-                    items.set(currentEditingPosition, updatedText);
+                    // Update the changed element and save to the database.
+                    currentEditingItem.task = data.getStringExtra(ITEM_TEXT_EXTRA);
+                    todoSource.saveItem(currentEditingItem);
 
                     // Update the UI
                     itemsAdapter.notifyDataSetChanged();
 
-                    // Persist the change.
-                    writeItems();
+                    currentEditingItem = null;
                 }
                 break;
         }

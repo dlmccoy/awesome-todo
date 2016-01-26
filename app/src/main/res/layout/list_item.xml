@@ -2,14 +2,23 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="horizontal"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:descendantFocusability="blocksDescendants">
 
     <TextView xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/taskText"
-        android:layout_width="266dp"
+        android:layout_width="230dp"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceListItemSmall"
         android:gravity="center_vertical"
         android:minHeight="?android:attr/listPreferredItemHeightSmall" />
+
+    <Spinner
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+
+        android:id="@+id/prioritySpinner"
+        android:layout_weight="1" />
+
 
 </LinearLayout>

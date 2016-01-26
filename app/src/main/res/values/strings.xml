@@ -6,4 +6,11 @@
     <string name="new_item_hint">Enter a New Item</string>
     <string name="add_item_btn_txt">Add Item</string>
     <string name="edit_save_btn_txt">Save</string>
+    <string-array name="priority_options">
+        <item>Highest</item>
+        <item>High</item>
+        <item>Normal</item>
+        <item>Lower</item>
+        <item>Lowest</item>
+    </string-array>
 </resources>

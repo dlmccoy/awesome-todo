@@ -1,10 +1,10 @@
-package com.dillonmccoy.awesometodo;
+package com.dillonmccoy.awesometodo.utils;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.dillonmccoy.awesometodo.TodoItemContract.TodoEntry;
+import com.dillonmccoy.awesometodo.models.TodoItem.TodoColumns;
 
 public class TodoDBHelper extends SQLiteOpenHelper {
 
@@ -12,14 +12,14 @@ public class TodoDBHelper extends SQLiteOpenHelper {
     private static final String INT_TYPE = " INTEGER";
     private static final String COMMA_SEP = ",";
     private static final String SQL_CREATE_ENTRIES =
-            "CREATE TABLE " + TodoEntry.TABLE_NAME + " (" +
-                    TodoEntry._ID + " INTEGER PRIMARY KEY," +
-                    TodoEntry.COLUMN_NAME_TASK + TEXT_TYPE + COMMA_SEP +
-                    TodoEntry.COLUMN_NAME_PRIORITY + INT_TYPE  +
+            "CREATE TABLE " + TodoColumns.TABLE_NAME + " (" +
+                    TodoColumns._ID + " INTEGER PRIMARY KEY," +
+                    TodoColumns.COLUMN_NAME_TASK + TEXT_TYPE + COMMA_SEP +
+                    TodoColumns.COLUMN_NAME_PRIORITY + INT_TYPE  +
             " )";
 
     private static final String SQL_DELETE_ENTRIES =
-            "DROP TABLE IF EXISTS " + TodoEntry.TABLE_NAME;
+            "DROP TABLE IF EXISTS " + TodoColumns.TABLE_NAME;
 
     // If you change the database schema, you must increment the database version.
     public static final int DATABASE_VERSION = 1;

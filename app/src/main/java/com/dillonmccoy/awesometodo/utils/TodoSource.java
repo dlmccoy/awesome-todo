@@ -1,26 +1,24 @@
-package com.dillonmccoy.awesometodo;
+package com.dillonmccoy.awesometodo.utils;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import org.w3c.dom.Comment;
-
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 
-import com.dillonmccoy.awesometodo.TodoItemContract.TodoEntry;
+import com.dillonmccoy.awesometodo.models.TodoItem.TodoColumns;
+import com.dillonmccoy.awesometodo.models.TodoItem;
 
 public class TodoSource {
     TodoDBHelper dbHelper;
     SQLiteDatabase database;
 
     String[] allColumns = {
-            TodoItemContract.TodoEntry._ID,
-            TodoItemContract.TodoEntry.COLUMN_NAME_TASK,
-            TodoItemContract.TodoEntry.COLUMN_NAME_PRIORITY
+            TodoColumns._ID,
+            TodoColumns.COLUMN_NAME_TASK,
+            TodoColumns.COLUMN_NAME_PRIORITY
     };
 
     public TodoSource(Context context) {
@@ -39,7 +37,7 @@ public class TodoSource {
         ArrayList<TodoItem> items = new ArrayList<>();
 
         Cursor cursor = database.query(
-                TodoItemContract.TodoEntry.TABLE_NAME,
+                TodoColumns.TABLE_NAME,
                 allColumns,
                 null, null, null, null, null);
         cursor.moveToFirst();
@@ -55,13 +53,13 @@ public class TodoSource {
     public TodoItem addTodoItem(String newItem) {
         ContentValues values = new ContentValues();
 
-        values.put(TodoEntry.COLUMN_NAME_TASK, newItem);
-        values.put(TodoEntry.COLUMN_NAME_PRIORITY, 3);
+        values.put(TodoColumns.COLUMN_NAME_TASK, newItem);
+        values.put(TodoColumns.COLUMN_NAME_PRIORITY, TodoItem.DEFAULT_PRIORITY);
 
-        long insertId = database.insert(TodoEntry.TABLE_NAME, null, values);
+        long insertId = database.insert(TodoColumns.TABLE_NAME, null, values);
 
-        Cursor cursor = database.query(TodoEntry.TABLE_NAME,
-                allColumns, TodoEntry.COLUMN_ID + " = " + insertId, null,
+        Cursor cursor = database.query(TodoColumns.TABLE_NAME,
+                allColumns, TodoColumns.COLUMN_ID + " = " + insertId, null,
                 null, null, null);
         cursor.moveToFirst();
         TodoItem item = cursorToItem(cursor);
@@ -76,14 +74,14 @@ public class TodoSource {
 
     public void saveItem(TodoItem item) {
         ContentValues values = new ContentValues();
-        values.put(TodoEntry.COLUMN_NAME_TASK, item.task);
-        values.put(TodoEntry.COLUMN_NAME_PRIORITY, item.priority);
+        values.put(TodoColumns.COLUMN_NAME_TASK, item.task);
+        values.put(TodoColumns.COLUMN_NAME_PRIORITY, item.priority);
         String[] selectionArgs = { String.valueOf(item.id) };
-        database.update(TodoEntry.TABLE_NAME, values, TodoEntry.COLUMN_ID + " = ?", selectionArgs);
+        database.update(TodoColumns.TABLE_NAME, values, TodoColumns.COLUMN_ID + " = ?", selectionArgs);
     }
 
     public void deleteItem(TodoItem item) {
         String[] deleteArgs = { String.valueOf(item.id) };
-        database.delete(TodoEntry.TABLE_NAME, TodoEntry.COLUMN_ID + " = ?", deleteArgs);
+        database.delete(TodoColumns.TABLE_NAME, TodoColumns.COLUMN_ID + " = ?", deleteArgs);
     }
 }
